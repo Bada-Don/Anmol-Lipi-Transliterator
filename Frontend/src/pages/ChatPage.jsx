@@ -9,7 +9,7 @@ const AI_AVATAR_ANMOL = "https://placehold.co/40x40/00c2ff/0a0f1f?text=AL&font=o
 const AI_AVATAR_GURBANI = "https://placehold.co/40x40/ffab00/0a0f1f?text=GH&font=orbitron";
 const AI_AVATAR_PRABHKI = "https://placehold.co/40x40/f50057/0a0f1f?text=P&font=orbitron";
 const USER_AVATAR = "https://placehold.co/40x40/7f5af0/ffffff?text=U&font=inter";
-const FLASK_API_URL = "http://localhost:5000/api/transliterate";
+const FLASK_API_URL = "https://anmol-lipi-transliterator.onrender.com/api/transliterate";
 
 const getChatConfig = (chatId) => { /* ... same as before ... */
     switch (chatId) {
