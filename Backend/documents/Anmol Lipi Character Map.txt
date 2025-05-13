@@ -1,0 +1,138 @@
+**Lowercase Letters (a-z):**
+
+*   `a` -> ੳ (Aira - vowel carrier)
+*   `b` -> ਬ (Babba)
+*   `c` -> ਚ (Chacha)
+*   `d` -> ਦ (Dadda)
+*   `e` -> ੲ (Iri)
+*   `f` -> ਡ (Dudda)
+*   `g` -> ਗ (Gagga)
+*   `h` -> ਹ (Haha)
+*   `i` -> ਿ (Sihari - short 'i' vowel sign - **Typed BEFORE consonant**)
+*   `j` -> ਜ (Jajja)
+*   `k` -> ਕ (Kakka)
+*   `l` -> ਲ (Lalla)
+*   `m` -> ਮ (Mamma)
+*   `n` -> ਨ (Nanna)
+*   `o` -> ੋ (Hora - 'o' vowel sign)
+*   `p` -> ਪ (Pappa)
+*   `q` -> ਤ (Tatta)
+*   `r` -> ਰ (Rara)
+*   `s` -> ਸ (Sassa)
+*   `t` -> ਟ (Tainka)
+*   `u` -> ੁ (Aunkar - short 'u' vowel sign)
+*   `v` -> ਵ (Vava)
+*   `w` -> ਾ (Kanna - 'aa' vowel sign)
+*   `x` -> ਣ (Nahnha)
+*   `y` -> ੇ (Lavan - 'ay' vowel sign)
+*   `z` -> ਜ਼ (Zazza - Jajja pair bindi)
+
+**Uppercase Letters (A-Z):**
+
+*   `A` -> ਅ (Aira)
+*   `B` -> ਭ (Bhabba)
+*   `C` -> ਛ (Chhachha)
+*   `D` -> ਧ (Dhadha)
+*   `E` -> ਓ (oo)
+*   `F` -> ਢ (Dhudda)
+*   `G` -> ਘ (Ghagga)
+*   `H` -> ਹ (Pair Haha - subscript ਹ) - *Often typed after the main consonant*
+*   `I` -> ੀ (Bihari - long 'ee' vowel sign)
+*   `J` -> ਝ (Jhajja)
+*   `K` -> ਖ (Khakha)
+*   `L` -> ਲ਼ (Lalla pair bindi)
+*   `M` ->  ੰ (Tippi - nasalization crescent)
+*   `N` -> ◌. (Bindi - nasalization dot)
+*   `O` -> ੌ (Kanaura - 'aw' vowel sign)
+*   `P` -> ਫ (Phupha)
+*   `Q` -> ਥ (Thathha)
+*   `R` -> ਰ (Pair Rara - subscript ਰ) - *Often typed after the main consonant*
+*   `S` -> ਸ਼ (Shasha - Sassa pair bindi)
+*   `T` -> ਠ (Thathha)
+*   `U` -> ੂ (Dulainkar - long 'oo' vowel sign)
+*   `V` -> ੜ (Rahrha)
+*   `W` -> ਾਂ (Kanna with Bindi vowel)
+*   `X` -> ਯ (Yaiyya)
+*   `Y` -> ੈ (Dulavan Vowel)
+*   `Z` -> ਗ਼ (Gugga pair Bindi)
+
+**Numbers (0-9):**
+
+*   `1` -> ੧ (Gurmukhi Digit One)
+*   `2` -> ੨ (Gurmukhi Digit Two)
+*   `3` -> ੩ (Gurmukhi Digit Three)
+*   `4` -> ੪ (Gurmukhi Digit Four)
+*   `5` -> ੫ (Gurmukhi Digit Five)
+*   `6` -> ੬ (Gurmukhi Digit Six)
+*   `7` -> ੭ (Gurmukhi Digit Seven)
+*   `8` -> ੮ (Gurmukhi Digit Eight)
+*   `9` -> ੯ (Gurmukhi Digit Nine)
+*   `0` -> ੦ (Gurmukhi Digit Zero)
+*   *(Self-correction: Some Anmol Lipi variants might keep Latin numerals 0-9)*
+
+**Shift + Numbers (Symbols):**
+
+*   `!` (Shift+1) -> ! (Exclamation Mark)
+*   `@` (Shift+2) -> ੍ (Halant)* Often typed after the main consonant*
+*   `#` (Shift+3) -> # (Hash/Number sign)
+*   `$` (Shift+4) -> $ (Dollar sign)
+*   `%` (Shift+5) -> % (Percent sign)
+*   `^` (Shift+6) -> ਖ਼ (Khukha pair bindi)
+*   `&` (Shift+7) -> ਫ਼ (Fuffa pair bindi)
+*   `*` (Shift+8) -> * (Asterisk)
+*   `(` (Shift+9) -> ( (Opening Parenthesis)
+*   `)` (Shift+0) -> ) (Closing Parenthesis)
+
+**Punctuation & Symbols:**
+
+*   `` ` `` (Backtick) -> ੱ (Adhak - consonant doubler sign)
+*   `-` (Hyphen) -> - (Hyphen)
+*   `=` (Equals) -> = (Equals)
+*   `[` (Opening Bracket) -> । (Dandi - Gurmukhi full stop)
+*   `]` (Closing Bracket) -> ।। (Double Dandi - Gurmukhi paragraph end)
+*   `\` (Backslash) -> ਞ (Njanja - nasal consonant)
+*   `;` (Semicolon) -> ; (Semicolon)
+*   `'` (Apostrophe) -> ' (Apostrophe)
+*   `,` (Comma) -> , (Comma)
+*   `.` (Period/Dot) -> . (Period/Dot)
+*   `/` (Forward Slash) -> / (Forward Slash)
+
+**Shift + Punctuation & Symbols:**
+
+*   `~` (Tilde / Shift+Backtick) -> ੱ (Adhak version 2 - consonant doubler sign)
+*   `_` (Underscore / Shift+Hyphen) -> - (Hyphen version 2)
+*   `+` (Plus / Shift+Equals) -> + (Plus sign)
+*   `{` (Opening Brace / Shift+[) -> { (Opening Brace)
+*   `}` (Closing Brace / Shift+]) -> } (Closing Brace)
+*   `|` (Pipe / Shift+Backslash) -> ਙ (Nganga - nasal consonant)
+*   `:` (Colon / Shift+Semicolon) -> : (Colon)
+*   `"` (Double Quote / Shift+Apostrophe) -> " (Double Quote)
+*   `<` (Less Than / Shift+Comma) -> ੴ  (Ek Onkar)
+*   `>` (Greater Than / Shift+Period) -> `Khanda` (Khanda)
+*   `?` (Question Mark / Shift+Forward Slash) -> ? (Question Mark)
+
+**Whitespace:**
+
+*   `Spacebar` -> (Space)
+*   `Tab` -> (Tab)
+
+**Some common questions are answered below.**
+
+1.  Are there any mappings here that are definitely **incorrect** for your font?
+Ans: Yes there were... Now they are corrected.
+
+2.  Are there any Gurmukhi characters you need that are **missing** from this map?
+Ans. No. But one thing to note is, that if you notice any character missing in the map from either language, you may assume that it was not required for our work.
+
+3.  Confirm the typing order for **Sihari (ਿ)**. Is it indeed typed *before* the consonant with your font?
+Ans. Yes it is typed before the consonant.
+
+4.  Confirm the keys used for **Pair/Subscript characters (ਹ, ਰ, ਵ)** and if they are typed before or after the main consonant.
+Ans. Keys used for **Pair/Subscript characters (ਹ, ਰ, ਵ)** are updated, and they are typed after the main consonant.
+
+5.  Confirm the keys for **Adhak (ੱ)**, **Bindi (ਂ)**, and **Tippi (ੰ)**.
+Ans. Updated
+6.  Confirm whether numbers `0-9` produce **Gurmukhi** or **Latin** numerals.
+Ans. Doesn't matter. 
+
+Any more doubts?

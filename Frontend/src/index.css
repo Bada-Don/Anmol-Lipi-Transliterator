@@ -1,0 +1,69 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    body {
+        font-family: 'Inter', sans-serif;
+        /* Fallback for browsers that don't support backdrop-filter */
+        background-color: #0a0f1f;
+        @apply selection:bg-cyan-500 selection:text-black;
+    }
+}
+
+.font-orbitron {
+    font-family: 'Orbitron', sans-serif;
+}
+
+/* Custom scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(0, 190, 255, 0.6);
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 190, 255, 0.8);
+}
+
+/* Glassmorphism effect */
+.glass-effect {
+    background: rgba(20, 25, 40, 0.6);
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    border: 1px solid rgba(50, 60, 90, 0.5);
+}
+
+/* Animated gradient background */
+@keyframes gradientAnimation {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+.animated-gradient-bg {
+    background: linear-gradient(-45deg, #0a0f1f, #0d152b, #070a15, #0f1a33);
+    background-size: 400% 400%;
+    animation: gradientAnimation 25s ease infinite;
+}
+
+/* Message typing animation */
+.typing-dot {
+    animation: typing 1s infinite;
+}
+.typing-dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+.typing-dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+@keyframes typing {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+}
