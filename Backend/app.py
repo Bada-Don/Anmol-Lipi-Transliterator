@@ -128,6 +128,9 @@ Only output the final list in JSON format without any explanation.
         print(f"An unexpected error occurred in call_gemini_for_punjabi_list: {e}")
         return None
 
+@app.route('/', methods=['GET'])
+def Test():
+    return 'Hello World'
 
 @app.route('/api/transliterate', methods=['POST'])
 def transliterate_endpoint():
