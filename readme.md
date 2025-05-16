@@ -60,6 +60,7 @@ To solve this, I built **Anmol Transliterator**, which automates and simplifies 
 * 🔁 Add support for more fonts and languages.
 * 🔤 Enable reverse transliteration (Font → Roman).
 * 🧠 Improve AI accuracy using feedback loops.
+* 🫙 Storing correct results of repeated words for optimization.
 
 ---
 
