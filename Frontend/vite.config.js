@@ -9,9 +9,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'robots.txt', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Your App Name',
-        short_name: 'AppShortName',
-        description: 'Your app description',
+        name: 'Boliya',
+        short_name: 'boliya',
+        description: 'Language Transliterator from English to Punjabi',
         theme_color: '#ffffff',
         background_color: '#ffffff',
         display: 'standalone',
