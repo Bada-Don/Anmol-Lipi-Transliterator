@@ -3,8 +3,15 @@ import ast
 import re
 from anmol_transliterate import transliterate_punjabi
 
+import os
+
+from dotenv import load_dotenv
+load_dotenv()
+
 # 🔐 Replace with your Gemini API Key
-GEMINI_API_KEY = "AIzaSyBsPKB48895ATy2WHolITz4db5xmMG6Ozs"
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+print("Loaded URI:", GEMINI_API_KEY)  # 🔍 Only for local debugging!
+
 MODEL_NAME = "gemini-2.0-flash"
 GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL_NAME}:generateContent?key={GEMINI_API_KEY}"
 
