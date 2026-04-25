@@ -316,7 +316,7 @@ def get_history(session_id):
     try:
         conn = get_db_connection()
         messages = conn.execute(
-            'SELECT text, sender, timestamp FROM chat_history WHERE session_id = ? ORDER BY timestamp ASC',
+            'SELECT id, text, sender, timestamp FROM chat_history WHERE session_id = ? ORDER BY timestamp ASC',
             (session_id,)
         ).fetchall()
         conn.close()
@@ -326,6 +326,35 @@ def get_history(session_id):
     except Exception as e:
         logger.error(f"Error fetching history: {e}")
         return jsonify({"error": "Failed to fetch history"}), 500
+
+@app.route('/api/messages/<int:msg_id>', methods=['PUT'])
+def update_message(msg_id):
+    try:
+        data = request.get_json()
+        text = data.get('text')
+        if not text:
+            return jsonify({"error": "Missing text"}), 400
+        conn = get_db_connection()
+        conn.execute('UPDATE chat_history SET text = ? WHERE id = ?', (text, msg_id))
+        conn.commit()
+        conn.close()
+        return jsonify({"message": "Message updated"})
+    except Exception as e:
+        logger.error(f"Error updating message: {e}")
+        return jsonify({"error": "Failed to update message"}), 500
+
+@app.route('/api/messages/<int:msg_id>', methods=['DELETE'])
+def delete_message(msg_id):
+    try:
+        conn = get_db_connection()
+        conn.execute('DELETE FROM chat_history WHERE id = ?', (msg_id,))
+        conn.commit()
+        conn.close()
+        return jsonify({"message": "Message deleted"})
+    except Exception as e:
+        logger.error(f"Error deleting message: {e}")
+        return jsonify({"error": "Failed to delete message"}), 500
+
 
 @app.route('/api/transliterate', methods=['POST'])
 def transliterate_endpoint():
@@ -362,11 +391,13 @@ def transliterate_endpoint():
         conn.execute('UPDATE sessions SET title = ? WHERE id = ?', (title, session_id))
 
     # Save User Message
+    user_msg_id = None
     try:
-        conn.execute(
+        cursor = conn.execute(
             'INSERT INTO chat_history (session_id, text, sender) VALUES (?, ?, ?)',
             (session_id, english_input, 'user')
         )
+        user_msg_id = cursor.lastrowid
         conn.commit()
     except Exception as e:
         logger.error(f"Error saving user message: {e}")
@@ -393,17 +424,24 @@ def transliterate_endpoint():
         final_output = ' '.join(transliterated_words)
         
         # Save AI Message
+        ai_msg_id = None
         try:
-            conn.execute(
+            cursor = conn.execute(
                 'INSERT INTO chat_history (session_id, text, sender) VALUES (?, ?, ?)',
                 (session_id, final_output, 'ai')
             )
+            ai_msg_id = cursor.lastrowid
             conn.commit()
         except Exception as e:
             logger.error(f"Error saving AI message: {e}")
 
         conn.close()
-        return jsonify({"transliterated_text": final_output})
+        return jsonify({
+            "transliterated_text": final_output,
+            "user_msg_id": user_msg_id,
+            "ai_msg_id": ai_msg_id
+        })
+
     except Exception as e:
         conn.close()
         logger.error(f"Error during Anmol transliteration: {e}\n{traceback.format_exc()}")

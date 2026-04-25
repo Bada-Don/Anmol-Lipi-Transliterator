@@ -3,7 +3,7 @@ import Message from './Message';
 import TypingIndicator from './TypingIndicator';
 
 // Add userAvatar prop
-function ChatMessages({ messages, isTyping, aiAvatar, userAvatar }) {
+function ChatMessages({ messages, isTyping, aiAvatar, userAvatar, onRetry, onEdit }) {
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -30,10 +30,13 @@ function ChatMessages({ messages, isTyping, aiAvatar, userAvatar }) {
           {messages.map((msg) => (
             <Message
               key={msg.id}
+              id={msg.id}
               text={msg.text}
               sender={msg.sender}
               timestamp={msg.timestamp}
               avatar={msg.sender === 'ai' ? aiAvatar : userAvatar}
+              onRetry={onRetry}
+              onEdit={onEdit}
             />
           ))}
           {isTyping && <TypingIndicator aiAvatar={aiAvatar} />}
@@ -43,6 +46,7 @@ function ChatMessages({ messages, isTyping, aiAvatar, userAvatar }) {
     </main>
   );
 }
+
 
 
 export default ChatMessages;

@@ -1,25 +1,43 @@
+import logging
+logger = logging.getLogger('aura.transliterate')
+
 def transliterate_punjabi(input_list):
+
     transliteration = []
 
     char_map = {
-        # Vowels
+        # Vowels (Independent)
         'ਅ': 'A', 'ਆ': 'Aw', 'ਇ': 'ie', 'ਈ': 'eI', 'ਉ': 'au', 'ਊ': 'aU',
-        'ਏ': 'ey', 'ਐ': 'AY', 'ਓ': 'E', 'ਔ': 'AO', 'ਾ': 'w',
-
-        # Lowercase
-        'ੳ': 'a', 'ਬ': 'b', 'ਚ': 'c', 'ਦ': 'd', 'ੲ': 'e', 'ਡ': 'f', 'ਗ': 'g',
-        'ਹ': 'h', 'ਿ': 'i', 'ਜ': 'j', 'ਕ': 'k', 'ਲ': 'l', 'ਮ': 'm', 'ਨ': 'n',
-        'ੋ': 'o', 'ਪ': 'p', 'ਤ': 'q', 'ਰ': 'r', 'ਸ': 's', 'ਟ': 't', 'ੁ': 'u',
-        'ਵ': 'v', 'ਣ': 'x', 'ੇ': 'y', 'ਜ਼': 'z',
-
-        # Uppercase
-        'ਭ': 'B', 'ਛ': 'C', 'ਧ': 'D', 'ਢ': 'F', 'ਘ': 'G', '੍ਹ': 'H',
-        'ੀ': 'I', 'ਝ': 'J', 'ਖ': 'K', 'ਲ਼': 'L', 'ੰ': 'M', 'ਂ': 'N',
-        'ੌ': 'O', 'ਫ': 'P', 'ਥ': 'Q', '੍ਰ': 'R', 'ਸ਼': 'S', 'ਠ': 'T',
-        'ੂ': 'U', 'ੜ': 'V', 'ਯ': 'X', 'ੈ': 'Y', 'ਗ਼': 'Z',
-
-        # Special
-        'ਙ': '|', '◌ੱ': '~', ' ': ' ', 'ੱ': '`'  # include space and backtick explicitly
+        'ਏ': 'ey', 'ਐ': 'AY', 'ਓ': 'E', 'ਔ': 'AO', 
+        
+        # Vowels (Dependent/Matras)
+        'ਾ': 'w', 'ਿ': 'i', 'ੀ': 'I', 'ੁ': 'u', 'ੂ': 'U', 'ੇ': 'y', 'ੈ': 'Y', 'ੋ': 'o', 'ੌ': 'O',
+        
+        # Consonants
+        'ੳ': 'a', 'ਅ': 'A', 'ੲ': 'e',
+        'ਸ': 's', 'ਹ': 'h',
+        'ਕ': 'k', 'ਖ': 'K', 'ਗ': 'g', 'ਘ': 'G', 'ਙ': '|',
+        'ਚ': 'c', 'ਛ': 'C', 'ਜ': 'j', 'ਝ': 'J', 'ਞ': 'I',
+        'ਟ': 't', 'ਠ': 'T', 'ਡ': 'f', 'ਢ': 'F', 'ਣ': 'x',
+        'ਤ': 'q', 'ਥ': 'Q', 'ਦ': 'd', 'ਧ': 'D', 'ਨ': 'n',
+        'ਪ': 'p', 'ਫ': 'P', 'ਬ': 'b', 'ਭ': 'B', 'ਮ': 'm',
+        'ਯ': 'X', 'ਰ': 'r', 'ਲ': 'l', 'ਵ': 'v', 'ੜ': 'V',
+        
+        # Modified Consonants (with dot)
+        'ਸ਼': 'S', 'ਖ਼': 'K', 'ਗ਼': 'G', 'ਜ਼': 'z', 'ਫ਼': 'P', 'ਲ਼': 'L',
+        'ਲ': 'l', # redundancy check
+        
+        # Nasals/Special
+        'ਂ': 'N', 'ੰ': 'M', 'ੱ': '`', 'ਁ': 'N',
+        
+        # Subscripts
+        '੍ਹ': 'H', '੍ਰ': 'R', '੍ਵ': 'V', '੍ਯ': 'X', '੍': ' ',
+        
+        # Combined/Common errors from Gemini
+        'ੈਂ': 'YM', 'ੋਂ': 'oN', 'ਾਂ': 'wN', 'ੀਂ': 'IN', 'ੂਂ': 'UN', 'ੋਂ': 'oN',
+        
+        # Punctuation & Space
+        ' ': ' ', '।': '.', ',': ',', '.': '.', '-': '-', '?': '?'
     }
 
     i = 0
@@ -28,37 +46,47 @@ def transliterate_punjabi(input_list):
 
         # Rule 2: 'ਿ' after '੍ਰ' or '੍ਹ' → place 'i' before i-2th char
         if char == 'ਿ' and i >= 2 and input_list[i - 1] in ['੍ਰ', '੍ਹ']:
-            translit_prev2 = char_map.get(input_list[i - 2], input_list[i - 2])
-            translit_prev1 = char_map.get(input_list[i - 1], input_list[i - 1])
+            prev2 = input_list[i - 2]
+            prev1 = input_list[i - 1]
+            
+            translit_prev2 = char_map.get(prev2, prev2)
+            translit_prev1 = char_map.get(prev1, prev1)
             translit_i = char_map.get(char, char)
-            transliteration = transliteration[:-2]  # remove last two
+            
+            # Remove last two and reorder
+            if len(transliteration) >= 2:
+                transliteration = transliteration[:-2]
             transliteration.extend([translit_i, translit_prev2, translit_prev1])
             i += 1
 
         # Rule 1: Simple 'ਿ' case → place 'i' before i-1th char
         elif char == 'ਿ' and i > 0:
-            translit_prev = char_map.get(input_list[i - 1], input_list[i - 1])
+            prev = input_list[i - 1]
+            translit_prev = char_map.get(prev, prev)
             translit_i = char_map.get(char, char)
-            transliteration = transliteration[:-1]  # remove last added
+            
+            if len(transliteration) >= 1:
+                transliteration = transliteration[:-1]
             transliteration.extend([translit_i, translit_prev])
             i += 1
 
-        # Rule 3: "੍" and "ਰ" → replace both with 'R'
-        elif i < len(input_list) - 1 and char == '੍ਰ' and input_list[i + 1] == 'ਰ':
-            transliteration.append('R')
-            i += 2  # skip next char too
-
-        # Rule 4: " " between same characters → ` + char
-        elif i < len(input_list) - 2 and input_list[i + 1] == '੍' and input_list[i] == input_list[i + 2]:
-            translit = char_map.get(input_list[i], input_list[i])
-            transliteration.append('`')
-            transliteration.append(translit)
-            i += 3  # skip current, space, and next repeated char
-
-        # Normal mapping
+        # Normal mapping with self-healing fallback
         else:
-            transliteration.append(char_map.get(char, char))
+            mapped = char_map.get(char, char)
+            
+            # Self-healing: if mapped character is still Gurmukhi, try to break it down
+            if any(ord(c) > 127 for c in mapped):
+                # Attempt to map individual characters within the string if Gemini returned a cluster
+                healed = ""
+                for subchar in mapped:
+                    healed += char_map.get(subchar, subchar)
+                logger.info(f"Self-healing: Repaired '{mapped}' -> '{healed}'")
+                transliteration.append(healed)
+            else:
+
+                transliteration.append(mapped)
             i += 1
+
 
     return transliteration
 

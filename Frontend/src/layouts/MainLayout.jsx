@@ -22,22 +22,28 @@ function MainLayout() {
       </div>
 
       {/* Mobile Sidebar (Off-canvas) */}
-      {sidebarOpen && (
-        <div className="md:hidden fixed inset-0 flex z-40">
-          <div className="fixed inset-0 bg-anthropic-black/20 dark:bg-black/40 backdrop-blur-sm transition-opacity" aria-hidden="true" onClick={toggleSidebar}></div>
-          
-          <div className="relative flex-1 flex flex-col max-w-sm w-full bg-ivory dark:bg-dark-surface border-r border-border-cream dark:border-border-dark shadow-whisper transition-colors duration-300">
-             <button
-                onClick={toggleSidebar}
-                className="absolute top-4 right-4 p-2 text-olive-gray dark:text-warm-silver hover:text-terracotta focus:outline-none"
-                aria-label="Close sidebar"
-            >
-                <X className="h-6 w-6" />
-            </button>
-             <Sidebar onLinkClick={toggleSidebar} />
-          </div>
+      <div className={`md:hidden fixed inset-0 z-50 transition-all duration-500 ease-in-out ${sidebarOpen ? 'visible pointer-events-auto' : 'invisible pointer-events-none'}`}>
+        {/* Backdrop */}
+        <div 
+          className={`fixed inset-0 bg-anthropic-black/20 dark:bg-black/60 backdrop-blur-sm transition-opacity duration-500 ease-in-out ${sidebarOpen ? 'opacity-100' : 'opacity-0'}`} 
+          aria-hidden="true" 
+          onClick={toggleSidebar}
+        ></div>
+        
+        {/* Sidebar content */}
+        <div className={`fixed inset-y-0 left-0 max-w-[280px] w-full bg-ivory dark:bg-dark-surface border-r border-border-cream dark:border-border-dark shadow-2xl transition-transform duration-500 ease-in-out transform flex flex-col h-full ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+           <button
+              onClick={toggleSidebar}
+              className="absolute top-6 right-[-50px] p-2 bg-ivory dark:bg-dark-surface rounded-r-lg text-olive-gray dark:text-warm-silver hover:text-terracotta focus:outline-none border-y border-r border-border-cream dark:border-border-dark shadow-md md:hidden"
+              aria-label="Close sidebar"
+          >
+              <X className="h-6 w-6" />
+          </button>
+           <Sidebar onLinkClick={toggleSidebar} />
         </div>
-      )}
+      </div>
+
+
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col overflow-hidden">

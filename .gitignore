@@ -11,6 +11,7 @@ Backend/*.pyc
 Backend/*.pyo
 Backend/.pytest_cache/
 Backend/.ruff_cache/
+Backend/chat_history.db
 
 # --- Node / Frontend ---
 Frontend/node_modules/

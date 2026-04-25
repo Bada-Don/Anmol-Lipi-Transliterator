@@ -72,8 +72,8 @@ function ChatPage() {
           const response = await fetch(`${HISTORY_API_URL}/${sessionId}`);
           if (response.ok) {
             const historyData = await response.json();
-            const formattedHistory = historyData.map((msg, index) => ({
-              id: `history-${index}`,
+            const formattedHistory = historyData.map((msg) => ({
+              id: msg.id,
               text: msg.text,
               sender: msg.sender,
               timestamp: new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -96,16 +96,19 @@ function ChatPage() {
     setInputValue('');
   }, [chatId, sessionId, chatConfig.initialMessage, chatConfig.avatar]);
 
-  const addMessageToChat = (text, sender, avatar) => {
+  const addMessageToChat = (text, sender, avatar, id = null) => {
     const newMessage = {
-      id: Date.now() + Math.random(), text, sender,
+      id: id || (Date.now() + Math.random()), 
+      text, 
+      sender,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       avatar,
     };
     setMessages(prevMessages => [...prevMessages, newMessage]);
+    return newMessage.id;
   };
 
-  const handleSendMessage = async (text) => {
+  const handleSendMessage = async (text, isRetry = false) => {
     if (!text.trim() || !chatConfig.isFunctional) {
       if (!chatConfig.isFunctional) {
         addMessageToChat("This chat is not active for sending messages.", 'ai', chatConfig.avatar);
@@ -122,8 +125,12 @@ function ChatPage() {
         window.dispatchEvent(new Event('sessionUpdate'));
     }
 
-    addMessageToChat(text, 'user', USER_AVATAR);
-    setInputValue(''); setIsTyping(true);
+    if (!isRetry) {
+      addMessageToChat(text, 'user', USER_AVATAR);
+    }
+    
+    setInputValue(''); 
+    setIsTyping(true);
     
     try {
       const response = await fetch(TRANSLITERATE_API_URL, {
@@ -155,13 +162,33 @@ function ChatPage() {
         window.dispatchEvent(new Event('sessionUpdate'));
       }
 
-      if (responseData.transliterated_text) {
-        addMessageToChat(responseData.transliterated_text, 'ai', chatConfig.avatar);
+      const { transliterated_text, user_msg_id, ai_msg_id } = responseData;
+
+      if (transliterated_text) {
+        setMessages(prev => {
+          const updated = [...prev];
+          // Update the ID of the last user message if it was a new send
+          if (!isRetry) {
+            for (let i = updated.length - 1; i >= 0; i--) {
+              if (updated[i].sender === 'user') {
+                updated[i].id = user_msg_id;
+                break;
+              }
+            }
+          }
+          // Add or Update AI message
+          updated.push({
+            id: ai_msg_id,
+            text: transliterated_text,
+            sender: 'ai',
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            avatar: chatConfig.avatar
+          });
+          return updated;
+        });
       } else if (responseData.error) {
         const code = responseData.code ? ` [${responseData.code}]` : '';
         addMessageToChat(`⚠️ ${responseData.error}${code}`, 'ai', chatConfig.avatar);
-      } else {
-        addMessageToChat("Boliyan received an unexpected response.", 'ai', chatConfig.avatar);
       }
     } catch (error) {
       console.error("Error calling transliteration API:", error);
@@ -171,14 +198,52 @@ function ChatPage() {
     }
   };
 
-  const findLastAiMessageText = () => {
-    for (let i = messages.length - 1; i >= 0; i--) {
-      if (messages[i].sender === 'ai') { return messages[i].text; }
-    }
-    return null;
+  const handleRetry = async (messageId) => {
+    const msgIndex = messages.findIndex(m => m.id === messageId);
+    if (msgIndex === -1 || messages[msgIndex].sender !== 'user') return;
+
+    // In-place: Discard all subsequent messages
+    const keptMessages = messages.slice(0, msgIndex + 1);
+    setMessages(keptMessages);
+    
+    // Resend
+    await handleSendMessage(messages[msgIndex].text, true);
   };
-  
-  const lastAiMessageText = findLastAiMessageText();
+
+  const handleEdit = async (messageId) => {
+    const msg = messages.find(m => m.id === messageId);
+    if (!msg || msg.sender !== 'user') return;
+
+    const newText = window.prompt("Edit your message and resend:", msg.text);
+    if (newText !== null && newText.trim() !== "" && newText !== msg.text) {
+      try {
+        // If it's a numeric ID (from DB), sync with backend
+        if (typeof messageId === 'number' || !isNaN(Number(messageId))) {
+          const dbId = parseInt(messageId);
+          await fetch(`${BASE_API_URL}/messages/${dbId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: newText })
+          });
+        }
+        
+        // Update local state and trigger in-place retry
+        setMessages(prev => {
+          const msgIndex = prev.findIndex(m => m.id === messageId);
+          if (msgIndex === -1) return prev;
+          const updated = prev.slice(0, msgIndex + 1);
+          updated[msgIndex].text = newText;
+          return updated;
+        });
+        
+        // Trigger the regeneration
+        await handleSendMessage(newText, true);
+      } catch (error) {
+        console.error("Error editing message:", error);
+      }
+    }
+  };
+
 
   return (
     <div className="w-full max-w-5xl mx-auto h-full flex flex-col">
@@ -189,12 +254,13 @@ function ChatPage() {
           isTyping={isTyping}
           aiAvatar={chatConfig.avatar}
           userAvatar={USER_AVATAR}
+          onRetry={handleRetry}
+          onEdit={handleEdit}
         />
         <ChatFooter
           inputValue={inputValue}
           onInputChange={setInputValue}
           onSendMessage={handleSendMessage}
-          lastAiMessageText={lastAiMessageText}
           isFunctional={chatConfig.isFunctional}
         />
       </div>

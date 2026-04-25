@@ -4,27 +4,11 @@ import { Send, Copy, Check } from 'lucide-react';
 
 
 // Add isFunctional prop
-function ChatFooter({ inputValue, onInputChange, onSendMessage, lastAiMessageText, isFunctional = true }) {
-    const [isCopied, setIsCopied] = useState(false);
-
+function ChatFooter({ inputValue, onInputChange, onSendMessage, isFunctional = true }) {
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (isFunctional) {
+        if (isFunctional && inputValue.trim()) {
             onSendMessage(inputValue);
-        }
-    };
-
-    const handleCopy = () => {
-        if (lastAiMessageText) {
-            navigator.clipboard.writeText(lastAiMessageText)
-                .then(() => {
-                    setIsCopied(true);
-                    setTimeout(() => setIsCopied(false), 1500);
-                })
-                .catch(err => {
-                    console.error('Failed to copy text: ', err);
-                    alert('Failed to copy message.');
-                });
         }
     };
 
@@ -54,26 +38,11 @@ function ChatFooter({ inputValue, onInputChange, onSendMessage, lastAiMessageTex
                 >
                     <Send className="w-5 h-5 sm:w-6 sm:h-6" />
                 </button>
-                
-                {lastAiMessageText && (
-                    <button
-                        type="button"
-                        title={isCopied ? "Copied!" : "Copy Last Response"}
-                        className={`p-4 rounded-generous transition-all shadow-sm 
-                            ${isCopied 
-                                ? 'bg-terracotta text-ivory'
-                                : 'bg-warm-sand dark:bg-anthropic-black text-anthropic-black dark:text-ivory hover:bg-stone-gray/10 dark:hover:bg-warm-sand/10'
-                            }`}
-                        onClick={handleCopy}
-                        disabled={isCopied}
-                    >
-                        {isCopied ? <Check className="w-5 h-5 sm:w-6 sm:h-6" /> : <Copy className="w-5 h-5 sm:w-6 sm:h-6" />}
-                    </button>
-                )}
             </form>
         </footer>
     );
 }
+
 
 
 
