@@ -8,11 +8,48 @@ import json
 import os
 import logging
 import traceback
+import sqlite3
+from datetime import datetime
 from dotenv import load_dotenv
 
 from anmol_transliterate import transliterate_punjabi
 
 load_dotenv()
+
+# --- Database Setup ---
+DB_PATH = 'chat_history.db'
+
+def get_db_connection():
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def init_db():
+    conn = get_db_connection()
+    # Sessions table
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS sessions (
+            id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            chat_type TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    # Messages table (updated to link to session_id)
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS chat_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id TEXT NOT NULL,
+            text TEXT NOT NULL,
+            sender TEXT NOT NULL,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (session_id) REFERENCES sessions (id) ON DELETE CASCADE
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+init_db()
 
 # --- Logging Setup ---
 logging.basicConfig(
@@ -205,6 +242,91 @@ Only output the final list in JSON format without any explanation.
 def Test():
     return 'Hello World'
 
+@app.route('/api/sessions/<chat_type>', methods=['GET'])
+def get_sessions(chat_type):
+    try:
+        conn = get_db_connection()
+        rows = conn.execute(
+            'SELECT id, title, created_at FROM sessions WHERE chat_type = ? ORDER BY created_at DESC',
+            (chat_type,)
+        ).fetchall()
+        conn.close()
+        
+        sessions = [dict(row) for row in rows]
+        return jsonify(sessions)
+    except Exception as e:
+        logger.error(f"Error fetching sessions: {e}")
+        return jsonify({"error": "Failed to fetch sessions"}), 500
+
+@app.route('/api/sessions', methods=['POST'])
+def create_session():
+    try:
+        data = request.get_json()
+        session_id = data.get('id')
+        title = data.get('title', 'New Chat')
+        chat_type = data.get('chat_type')
+        
+        if not session_id or not chat_type:
+            return jsonify({"error": "Missing session id or chat type"}), 400
+            
+        conn = get_db_connection()
+        conn.execute(
+            'INSERT INTO sessions (id, title, chat_type) VALUES (?, ?, ?)',
+            (session_id, title, chat_type)
+        )
+        conn.commit()
+        conn.close()
+        return jsonify({"message": "Session created", "id": session_id})
+    except Exception as e:
+        logger.error(f"Error creating session: {e}")
+        return jsonify({"error": "Failed to create session"}), 500
+
+@app.route('/api/sessions/<session_id>', methods=['PUT'])
+def rename_session(session_id):
+    try:
+        data = request.get_json()
+        title = data.get('title')
+        if not title:
+            return jsonify({"error": "Missing title"}), 400
+            
+        conn = get_db_connection()
+        conn.execute('UPDATE sessions SET title = ? WHERE id = ?', (title, session_id))
+        conn.commit()
+        conn.close()
+        return jsonify({"message": "Session renamed"})
+    except Exception as e:
+        logger.error(f"Error renaming session: {e}")
+        return jsonify({"error": "Failed to rename session"}), 500
+
+@app.route('/api/sessions/<session_id>', methods=['DELETE'])
+def delete_session(session_id):
+    try:
+        conn = get_db_connection()
+        conn.execute('DELETE FROM sessions WHERE id = ?', (session_id,))
+        conn.execute('DELETE FROM chat_history WHERE session_id = ?', (session_id,))
+        conn.commit()
+        conn.close()
+        return jsonify({"message": "Session deleted"})
+    except Exception as e:
+        logger.error(f"Error deleting session: {e}")
+        return jsonify({"error": "Failed to delete session"}), 500
+
+@app.route('/api/history/<session_id>', methods=['GET'])
+def get_history(session_id):
+    try:
+        conn = get_db_connection()
+        messages = conn.execute(
+            'SELECT text, sender, timestamp FROM chat_history WHERE session_id = ? ORDER BY timestamp ASC',
+            (session_id,)
+        ).fetchall()
+        conn.close()
+        
+        history = [dict(msg) for msg in messages]
+        return jsonify(history)
+    except Exception as e:
+        logger.error(f"Error fetching history: {e}")
+        return jsonify({"error": "Failed to fetch history"}), 500
+
 @app.route('/api/transliterate', methods=['POST'])
 def transliterate_endpoint():
     data = request.get_json()
@@ -212,25 +334,55 @@ def transliterate_endpoint():
         return jsonify({"error": "Missing 'text' in request body", "code": "MISSING_INPUT"}), 400
 
     english_input = data['text']
+    session_id = data.get('session_id')
+    chat_type = data.get('chat_type', 'anmol-lipi')
+    
+    if not session_id:
+        return jsonify({"error": "Missing session_id", "code": "MISSING_SESSION"}), 400
+        
     if not english_input.strip():
-        return jsonify({"transliterated_text": ""}) # Return empty if input is empty
+        return jsonify({"transliterated_text": ""})
 
-    logger.info(f"Transliterate request received: '{english_input[:100]}'")
+    logger.info(f"Transliterate request for session {session_id}: '{english_input[:50]}'")
+
+    conn = get_db_connection()
+    
+    # Check if session exists, create if not (auto-init)
+    session = conn.execute('SELECT title FROM sessions WHERE id = ?', (session_id,)).fetchone()
+    if not session:
+        # First message: use it as title (limited to 30 chars)
+        title = (english_input[:27] + '...') if len(english_input) > 30 else english_input
+        conn.execute(
+            'INSERT INTO sessions (id, title, chat_type) VALUES (?, ?, ?)',
+            (session_id, title, chat_type)
+        )
+    elif session['title'] == 'New Chat':
+        # Rename "New Chat" to the first message
+        title = (english_input[:27] + '...') if len(english_input) > 30 else english_input
+        conn.execute('UPDATE sessions SET title = ? WHERE id = ?', (title, session_id))
+
+    # Save User Message
+    try:
+        conn.execute(
+            'INSERT INTO chat_history (session_id, text, sender) VALUES (?, ?, ?)',
+            (session_id, english_input, 'user')
+        )
+        conn.commit()
+    except Exception as e:
+        logger.error(f"Error saving user message: {e}")
 
     # Step 1: Get Punjabi list from Gemini
     punjabi_output_list, error = call_gemini_for_punjabi_list(english_input)
 
     if error:
+        conn.close()
         logger.error(f"[{error['code']}] {error['message']} | Details: {error.get('details', 'N/A')}")
         status_code = 502 if error['code'].startswith('GEMINI_') else 500
         if error['code'] == 'GEMINI_RATE_LIMITED':
             status_code = 429
         elif error['code'] in ('GEMINI_AUTH_ERROR',):
             status_code = 503
-        return jsonify({
-            "error": error['message'],
-            "code": error['code']
-        }), status_code
+        return jsonify({"error": error['message'], "code": error['code']}), status_code
 
     # Step 2: Transliterate using anmol_transliterate
     try:
@@ -239,9 +391,21 @@ def transliterate_endpoint():
             transliterated_words.append(''.join(transliterate_punjabi(word_list)))
         
         final_output = ' '.join(transliterated_words)
-        logger.info(f"Transliteration successful: '{final_output[:100]}'")
+        
+        # Save AI Message
+        try:
+            conn.execute(
+                'INSERT INTO chat_history (session_id, text, sender) VALUES (?, ?, ?)',
+                (session_id, final_output, 'ai')
+            )
+            conn.commit()
+        except Exception as e:
+            logger.error(f"Error saving AI message: {e}")
+
+        conn.close()
         return jsonify({"transliterated_text": final_output})
     except Exception as e:
+        conn.close()
         logger.error(f"Error during Anmol transliteration: {e}\n{traceback.format_exc()}")
         return jsonify({
             "error": f"Error during script mapping: {type(e).__name__} — {str(e)}",

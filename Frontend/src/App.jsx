@@ -16,8 +16,8 @@ function App() {
            {/* Default route redirects to Anmol Lipi chat */}
            <Route index element={<Navigate to="/chat/anmol-lipi" replace />} />
 
-           {/* Chat route with a dynamic chatId parameter */}
-           <Route path="chat/:chatId" element={<ChatPage />} />
+           {/* Chat route with dynamic chatId and optional sessionId */}
+           <Route path="chat/:chatId/:sessionId?" element={<ChatPage />} />
 
            <Route path="about" element={<AboutPage />} />
            <Route path="contact" element={<ContactPage />} />
