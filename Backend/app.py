@@ -1,15 +1,26 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import requests
+from google import genai
+from google.genai import errors
 import ast
 import re
 import json
 import os
+import logging
+import traceback
 from dotenv import load_dotenv
 
 from anmol_transliterate import transliterate_punjabi
 
 load_dotenv()
+
+# --- Logging Setup ---
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+logger = logging.getLogger('aura')
 
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -17,8 +28,8 @@ if not GEMINI_API_KEY:
     # Option 1: Raise an error if key is missing
     raise ValueError("Missing GEMINI_API_KEY environment variable. Please set it.")
 
-MODEL_NAME = "gemini-2.0-flash" 
-GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL_NAME}:generateContent?key={GEMINI_API_KEY}"
+MODEL_NAME = "gemini-2.5-flash" 
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 app = Flask(__name__)
 CORS(app) # Enable CORS for all routes, allowing your React app to call this API
@@ -26,7 +37,8 @@ CORS(app) # Enable CORS for all routes, allowing your React app to call this API
 def call_gemini_for_punjabi_list(english_input):
     """
     Calls the Gemini model to get the Punjabi character list.
-    This function is adapted from your ai_studio_part1.py.
+    Returns (data, None) on success or (None, error_dict) on failure.
+    error_dict has: code, message, details (for server logs).
     """
     headers = {
         "Content-Type": "application/json"
@@ -68,65 +80,126 @@ Only output the final list in JSON format without any explanation.
         ]
     }
 
+    # --- Step 1: Call Gemini API ---
     try:
-        response = requests.post(GEMINI_API_URL, headers=headers, json=payload, timeout=30) 
-        response.raise_for_status() 
-        result = response.json()
-
-        if not result.get('candidates') or not result['candidates'][0].get('content') or not result['candidates'][0]['content'].get('parts'):
-            print("Error: Unexpected Gemini API response structure:", result)
-            return None
-
-        model_text = result['candidates'][0]['content']['parts'][0]['text']
+        logger.info(f"Calling Gemini API for input: '{english_input[:80]}...'")
+        response = client.models.generate_content(
+            model=MODEL_NAME,
+            contents=prompt,
+        )
+    except errors.APIError as e:
+        logger.error(f"Gemini API Error: {e.message}")
+        status = e.code
+        err_msg = e.message
         
-        model_text_cleaned = re.sub(r"^```json\n|```$", "", model_text.strip(), flags=re.MULTILINE)
-        model_text_cleaned = re.sub(r"^```\n|```$", "", model_text_cleaned.strip(), flags=re.MULTILINE)
-
-        list_start = model_text_cleaned.find('[')
-        if list_start == -1:
-            print(f"Error: Could not find list in Gemini response: {model_text_cleaned}")
-            return None
-        
-        list_str = model_text_cleaned[list_start:]
-        
-        punjabi_list_raw = None # Use a temporary variable
-        try:
-            punjabi_list_raw = json.loads(list_str)
-        except json.JSONDecodeError:
-            try:
-                punjabi_list_raw = ast.literal_eval(list_str)
-            except (ValueError, SyntaxError) as e:
-                print(f"Error evaluating list string: {list_str}, Error: {e}")
-                return None
-        
-        # ---- START: ADDED CHECK FOR EXTRA NESTING ----
-        punjabi_list = punjabi_list_raw
-        if isinstance(punjabi_list_raw, list) and len(punjabi_list_raw) == 1 and isinstance(punjabi_list_raw[0], list):
-             # Check if it looks like the [[list1, list2]] structure
-             potential_inner_list = punjabi_list_raw[0]
-             if all(isinstance(item, list) for item in potential_inner_list):
-                 print("Detected extra nesting, correcting structure.")
-                 punjabi_list = potential_inner_list # Use the inner list
-        # ---- END: ADDED CHECK FOR EXTRA NESTING ----
-
-        # Now perform the validation on the potentially corrected list
-        if not isinstance(punjabi_list, list) or \
-           not all(isinstance(word_list, list) for word_list in punjabi_list) or \
-           not all(isinstance(char, str) for word_list in punjabi_list for char in word_list):
-            # Log the *original* raw data for better debugging if validation fails
-            print(f"Error: Gemini output is not in the expected list of lists of strings format: {punjabi_list_raw}") 
-            return None
-            
-        return punjabi_list
-
-    except requests.exceptions.RequestException as e:
-        print(f"Error calling Gemini API: {e}")
-        print(f"Response status: {response.status_code if 'response' in locals() else 'N/A'}")
-        print(f"Response text: {response.text if 'response' in locals() else 'N/A'}")
-        return None
+        if status == 400:
+            return None, {
+                "code": "GEMINI_BAD_REQUEST",
+                "message": "The AI rejected the request (400). Input may contain unsupported content.",
+                "details": err_msg
+            }
+        elif status == 401 or status == 403:
+            return None, {
+                "code": "GEMINI_AUTH_ERROR",
+                "message": f"AI service authentication failed ({status}). API key may be invalid or expired.",
+                "details": err_msg
+            }
+        elif status == 429:
+            return None, {
+                "code": "GEMINI_RATE_LIMITED",
+                "message": "AI service is rate-limited. Please wait a moment and try again.",
+                "details": err_msg
+            }
+        elif status >= 500:
+            return None, {
+                "code": "GEMINI_SERVER_ERROR",
+                "message": f"The AI service is experiencing issues (HTTP {status}). Try again later.",
+                "details": err_msg
+            }
+        else:
+            return None, {
+                "code": "GEMINI_HTTP_ERROR",
+                "message": f"AI service returned an unexpected error (HTTP {status}).",
+                "details": err_msg
+            }
     except Exception as e:
-        print(f"An unexpected error occurred in call_gemini_for_punjabi_list: {e}")
-        return None
+        logger.error(f"Gemini API request failed: {e}")
+        return None, {
+            "code": "GEMINI_REQUEST_ERROR",
+            "message": f"AI service request failed: {type(e).__name__}",
+            "details": str(e)
+        }
+
+    # --- Step 2 & 3 & 4: Extract model text from response structure ---
+    try:
+        model_text = response.text
+        if not model_text:
+            return None, {
+                "code": "GEMINI_EMPTY_RESPONSE",
+                "message": "The AI returned an empty response. Please try again with different input.",
+                "details": "response.text is empty"
+            }
+        logger.debug(f"Gemini raw output: {model_text[:300]}")
+    except Exception as e:
+        logger.error(f"Error accessing response text: {e}")
+        return None, {
+            "code": "GEMINI_MALFORMED_RESPONSE",
+            "message": "The AI returned a response in an unexpected format. Please try again.",
+            "details": str(e)
+        }
+
+
+    # --- Step 5: Clean and extract the list from model text ---
+    model_text_cleaned = re.sub(r"^```json\n|```$", "", model_text.strip(), flags=re.MULTILINE)
+    model_text_cleaned = re.sub(r"^```\n|```$", "", model_text_cleaned.strip(), flags=re.MULTILINE)
+
+    list_start = model_text_cleaned.find('[')
+    if list_start == -1:
+        logger.error(f"No list found in Gemini output: {model_text_cleaned[:300]}")
+        return None, {
+            "code": "GEMINI_NO_LIST_IN_OUTPUT",
+            "message": "The AI did not return a transliterable list. It may not have understood the input.",
+            "details": f"No '[' found in cleaned output: {model_text_cleaned[:300]}"
+        }
+
+    list_str = model_text_cleaned[list_start:]
+
+    # --- Step 6: Parse the list string ---
+    punjabi_list_raw = None
+    try:
+        punjabi_list_raw = json.loads(list_str)
+    except json.JSONDecodeError:
+        try:
+            punjabi_list_raw = ast.literal_eval(list_str)
+        except (ValueError, SyntaxError) as e:
+            logger.error(f"Failed to parse list from Gemini output.\nList string: {list_str[:300]}\nError: {e}")
+            return None, {
+                "code": "GEMINI_LIST_PARSE_ERROR",
+                "message": "The AI returned a malformed list that couldn't be parsed. Please try again.",
+                "details": f"Parse error: {e}. Raw list_str: {list_str[:300]}"
+            }
+
+    # --- Step 7: Fix extra nesting ---
+    punjabi_list = punjabi_list_raw
+    if isinstance(punjabi_list_raw, list) and len(punjabi_list_raw) == 1 and isinstance(punjabi_list_raw[0], list):
+         potential_inner_list = punjabi_list_raw[0]
+         if all(isinstance(item, list) for item in potential_inner_list):
+             logger.debug("Detected extra nesting, correcting structure.")
+             punjabi_list = potential_inner_list
+
+    # --- Step 8: Validate structure ---
+    if not isinstance(punjabi_list, list) or \
+       not all(isinstance(word_list, list) for word_list in punjabi_list) or \
+       not all(isinstance(char, str) for word_list in punjabi_list for char in word_list):
+        logger.error(f"Gemini output failed validation. Expected list[list[str]], got: {type(punjabi_list).__name__}. Raw: {punjabi_list_raw}")
+        return None, {
+            "code": "GEMINI_INVALID_FORMAT",
+            "message": "The AI returned data in an unexpected format (not a list of character lists).",
+            "details": f"Validation failed. Type: {type(punjabi_list).__name__}, Raw: {str(punjabi_list_raw)[:300]}"
+        }
+
+    logger.info(f"Successfully parsed Punjabi list with {len(punjabi_list)} word(s).")
+    return punjabi_list, None
 
 @app.route('/', methods=['GET'])
 def Test():
@@ -136,34 +209,44 @@ def Test():
 def transliterate_endpoint():
     data = request.get_json()
     if not data or 'text' not in data:
-        return jsonify({"error": "Missing 'text' in request body"}), 400
+        return jsonify({"error": "Missing 'text' in request body", "code": "MISSING_INPUT"}), 400
 
     english_input = data['text']
     if not english_input.strip():
         return jsonify({"transliterated_text": ""}) # Return empty if input is empty
 
-    # Step 1: Get Punjabi list from Gemini
-    punjabi_output_list = call_gemini_for_punjabi_list(english_input)
+    logger.info(f"Transliterate request received: '{english_input[:100]}'")
 
-    if punjabi_output_list is None:
-        # Try to provide a fallback or a more specific error
-        # For now, a generic error. You might want to use a simpler, rule-based transliterator as a fallback.
-        # For example, use the user's original English input as a placeholder.
-        # Or, if ai_studio_part1.py itself has a simpler transliteration, you could use that.
-        # For now, we'll indicate failure to Aura.
-        return jsonify({"error": "Aura couldn't process the script for this input."}), 500
+    # Step 1: Get Punjabi list from Gemini
+    punjabi_output_list, error = call_gemini_for_punjabi_list(english_input)
+
+    if error:
+        logger.error(f"[{error['code']}] {error['message']} | Details: {error.get('details', 'N/A')}")
+        status_code = 502 if error['code'].startswith('GEMINI_') else 500
+        if error['code'] == 'GEMINI_RATE_LIMITED':
+            status_code = 429
+        elif error['code'] in ('GEMINI_AUTH_ERROR',):
+            status_code = 503
+        return jsonify({
+            "error": error['message'],
+            "code": error['code']
+        }), status_code
 
     # Step 2: Transliterate using anmol_transliterate
     try:
         transliterated_words = []
-        for word_list in punjabi_output_list: # word_list is a list of characters
+        for word_list in punjabi_output_list:
             transliterated_words.append(''.join(transliterate_punjabi(word_list)))
         
         final_output = ' '.join(transliterated_words)
+        logger.info(f"Transliteration successful: '{final_output[:100]}'")
         return jsonify({"transliterated_text": final_output})
     except Exception as e:
-        print(f"Error during Anmol transliteration: {e}")
-        return jsonify({"error": "Error processing script after translation."}), 500
+        logger.error(f"Error during Anmol transliteration: {e}\n{traceback.format_exc()}")
+        return jsonify({
+            "error": f"Error during script mapping: {type(e).__name__} — {str(e)}",
+            "code": "TRANSLITERATION_ERROR"
+        }), 500
 
 if __name__ == '__main__':
     # Make sure to use your actual Gemini API Key in GEMINI_API_KEY above

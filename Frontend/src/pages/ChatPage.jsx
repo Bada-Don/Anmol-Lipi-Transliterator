@@ -9,7 +9,9 @@ const AI_AVATAR_ANMOL = "https://placehold.co/40x40/00c2ff/0a0f1f?text=AL&font=o
 const AI_AVATAR_GURBANI = "https://placehold.co/40x40/ffab00/0a0f1f?text=GH&font=orbitron";
 const AI_AVATAR_PRABHKI = "https://placehold.co/40x40/f50057/0a0f1f?text=P&font=orbitron";
 const USER_AVATAR = "https://placehold.co/40x40/7f5af0/ffffff?text=U&font=inter";
-const FLASK_API_URL = "https://anmol-lipi-transliterator.onrender.com/api/transliterate";
+const FLASK_API_URL = import.meta.env.DEV
+  ? "http://127.0.0.1:5000/api/transliterate"
+  : "https://anmol-lipi-transliterator.onrender.com/api/transliterate";
 
 const getChatConfig = (chatId) => { /* ... same as before ... */
   switch (chatId) {
@@ -99,18 +101,25 @@ function ChatPage() {
       let responseData;
       if (!response.ok) {
         let errorMsg = `Aura encountered an issue (HTTP ${response.status}).`;
+        let errorCode = null;
         try {
           responseData = await response.json();
           if (responseData && responseData.error) { errorMsg = responseData.error; }
-        } catch (e) { /* Ignore */ }
-        addMessageToChat(errorMsg, 'ai', chatConfig.avatar);
+          if (responseData && responseData.code) { errorCode = responseData.code; }
+        } catch (e) { /* Ignore JSON parse failure */ }
+        const displayMsg = errorCode
+          ? `⚠️ ${errorMsg}\n\n[Error: ${errorCode}]`
+          : `⚠️ ${errorMsg}`;
+        console.error(`Transliteration error: [${errorCode || 'UNKNOWN'}] ${errorMsg}`);
+        addMessageToChat(displayMsg, 'ai', chatConfig.avatar);
         setIsTyping(false); return;
       }
       responseData = await response.json();
       if (responseData.transliterated_text) {
         addMessageToChat(responseData.transliterated_text, 'ai', chatConfig.avatar);
       } else if (responseData.error) {
-        addMessageToChat(responseData.error, 'ai', chatConfig.avatar);
+        const code = responseData.code ? ` [${responseData.code}]` : '';
+        addMessageToChat(`⚠️ ${responseData.error}${code}`, 'ai', chatConfig.avatar);
       } else {
         addMessageToChat("Aura received an unexpected response.", 'ai', chatConfig.avatar);
       }
