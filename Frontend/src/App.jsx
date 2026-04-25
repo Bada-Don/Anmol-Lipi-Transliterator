@@ -22,13 +22,13 @@ function App() {
            <Route path="about" element={<AboutPage />} />
            <Route path="contact" element={<ContactPage />} />
 
-           {/* Optional: Add a 404 Not Found route */}
            <Route path="*" element={
-             <div className="text-center p-10">
-               <h1 className="text-3xl font-orbitron text-red-400">404 - Not Found</h1>
-               <p className="text-gray-300 mt-2">The page you are looking for does not exist.</p>
+             <div className="text-center p-20">
+               <h1 className="text-6xl font-serif font-medium text-anthropic-black">404</h1>
+               <p className="text-olive-gray mt-4 text-xl">The page you are looking for does not exist.</p>
              </div>
             } />
+
         </Route>
       </Routes>
   );

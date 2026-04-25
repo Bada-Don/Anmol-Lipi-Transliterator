@@ -1,16 +1,25 @@
 import React, { useState } from 'react';
+import { Mail } from 'lucide-react';
 
-// Placeholder icons (replace with actual SVGs or FontAwesome if preferred)
-const PlaceholderIcon = ({ color = 'currentColor', size = '24' }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="24" height="24" rx="4" fill={color} fillOpacity="0.3"/>
-        <path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0-6 0" stroke={color} strokeWidth="1.5"/>
-        <path d="M17 17l-2.5-2.5" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
+const LinkedinIcon = ({ size = 20 }) => (
+    <svg 
+      width={size} 
+      height={size} 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+    >
+      <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+      <rect x="2" y="9" width="4" height="12"></rect>
+      <circle cx="4" cy="4" r="2"></circle>
     </svg>
 );
 
-
 function ContactPage() {
+
     const [formData, setFormData] = useState({ name: '', email: '', message: '' });
 
     const handleChange = (e) => {
@@ -20,110 +29,96 @@ function ContactPage() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Basic validation
         if (!formData.name || !formData.email || !formData.message) {
             alert('Please fill in all fields.');
             return;
         }
-        // In a real app, you'd send this data to a backend API
         console.log('Form data submitted:', formData);
-        alert(`Thank you, ${formData.name}! Your message has been logged to the console.`);
-        setFormData({ name: '', email: '', message: '' }); // Clear form
+        alert(`Thank you, ${formData.name}! Your message has been received.`);
+        setFormData({ name: '', email: '', message: '' });
     };
 
     return (
-        <div className="max-w-4xl mx-auto p-4 sm:p-8 text-gray-200">
-            <h1 className="text-3xl sm:text-4xl font-orbitron font-bold text-center text-cyan-300 mb-8">
-                Ways To Contact Me
+        <div className="max-w-4xl mx-auto p-4 sm:p-8 text-anthropic-black dark:text-warm-silver transition-colors duration-300">
+            <h1 className="text-4xl sm:text-5xl font-serif font-medium text-center text-anthropic-black dark:text-ivory mb-12 transition-colors">
+                Connect with Boliyan
             </h1>
 
-            <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12 glass-effect p-6 sm:p-8 rounded-lg border border-cyan-500/20">
-                {/* Illustration - replace with your actual image */}
-                <div className="flex-shrink-0 w-full md:w-1/3">
+            <div className="flex flex-col md:flex-row items-stretch gap-12 bg-white dark:bg-dark-surface p-8 sm:p-12 rounded-featured border border-border-cream dark:border-border-dark shadow-whisper transition-colors duration-300">
+                {/* Information Area */}
+                <div className="flex-shrink-0 w-full md:w-1/3 flex flex-col justify-center">
                    <img
-                     // src="./Contact Illustration.png" // Use direct import or public folder path
-                     src="https://placehold.co/300x300/0a0f1f/00c2ff?text=Contact+Art&font=orbitron"
+                     src="https://placehold.co/400x400/f5f4ed/c96442?text=Boliyan+Support&font=georgia"
                      alt="Contact Illustration"
-                     className="w-full h-auto max-w-xs mx-auto md:max-w-full rounded-md object-cover opacity-80"
+                     className="w-full h-auto rounded-featured object-cover shadow-sm"
                    />
+                   <div className="mt-8 space-y-4">
+                      <p className="text-stone-gray dark:text-warm-silver text-sm leading-relaxed italic transition-colors">
+                        "Communication is the bridge between confusion and clarity."
+                      </p>
+                      <div className="flex flex-wrap gap-4 mt-6">
+                        <a href="mailto:harshitashwani@gmail.com" className="p-3 rounded-full bg-parchment dark:bg-anthropic-black text-terracotta hover:bg-warm-sand dark:hover:bg-dark-surface transition-colors">
+                            <Mail className="w-5 h-5" />
+                        </a>
+                        <a href="https://www.linkedin.com/in/harshit-singla-7b459522a" className="p-3 rounded-full bg-parchment dark:bg-anthropic-black text-terracotta hover:bg-warm-sand dark:hover:bg-dark-surface transition-colors">
+                            <LinkedinIcon size={20} />
+                        </a>
+
+                      </div>
+                   </div>
                 </div>
 
                 {/* Form */}
-                <form onSubmit={handleSubmit} id="contactform" className="w-full md:w-2/3 space-y-5">
-                     <div>
-                        <input
-                            type="text"
-                            name="name"
-                            placeholder="Name"
-                            value={formData.name}
-                            onChange={handleChange}
-                            className="w-full p-3 bg-transparent text-gray-100 placeholder-gray-400 border-b-2 border-cyan-500/40 focus:border-cyan-400 focus:outline-none transition duration-300"
-                            required
-                        />
+                <form onSubmit={handleSubmit} id="contactform" className="w-full md:w-2/3 space-y-8">
+                     <div className="space-y-6">
+                        <div className="space-y-2">
+                           <label className="text-xs font-medium uppercase tracking-widest text-stone-gray dark:text-warm-silver ml-1 transition-colors">Name</label>
+                           <input
+                               type="text"
+                               name="name"
+                               placeholder="Your name"
+                               value={formData.name}
+                               onChange={handleChange}
+                               className="w-full p-4 bg-parchment/50 dark:bg-anthropic-black/50 text-anthropic-black dark:text-ivory placeholder-stone-gray/50 border border-border-warm dark:border-border-dark rounded-generous focus:ring-1 focus:ring-focus-blue focus:border-focus-blue outline-none transition-all"
+                               required
+                           />
+                        </div>
+                        <div className="space-y-2">
+                           <label className="text-xs font-medium uppercase tracking-widest text-stone-gray dark:text-warm-silver ml-1 transition-colors">Email</label>
+                           <input
+                               type="email"
+                               name="email"
+                               placeholder="email@example.com"
+                               value={formData.email}
+                               onChange={handleChange}
+                               className="w-full p-4 bg-parchment/50 dark:bg-anthropic-black/50 text-anthropic-black dark:text-ivory placeholder-stone-gray/50 border border-border-warm dark:border-border-dark rounded-generous focus:ring-1 focus:ring-focus-blue focus:border-focus-blue outline-none transition-all"
+                               required
+                           />
+                        </div>
+                        <div className="space-y-2">
+                           <label className="text-xs font-medium uppercase tracking-widest text-stone-gray dark:text-warm-silver ml-1 transition-colors">Message</label>
+                           <textarea
+                               name="message"
+                               placeholder="How can we help you?"
+                               value={formData.message}
+                               onChange={handleChange}
+                               rows="4"
+                               className="w-full p-4 bg-parchment/50 dark:bg-anthropic-black/50 text-anthropic-black dark:text-ivory placeholder-stone-gray/50 border border-border-warm dark:border-border-dark rounded-generous focus:ring-1 focus:ring-focus-blue focus:border-focus-blue outline-none transition-all resize-none custom-scrollbar"
+                               required
+                           />
+                        </div>
                      </div>
-                     <div>
-                        <input
-                            type="email"
-                            name="email"
-                            placeholder="Email"
-                            value={formData.email}
-                            onChange={handleChange}
-                             className="w-full p-3 bg-transparent text-gray-100 placeholder-gray-400 border-b-2 border-cyan-500/40 focus:border-cyan-400 focus:outline-none transition duration-300"
-                            required
-                        />
-                    </div>
-                    <div>
-                        <textarea
-                            name="message"
-                            placeholder="Enter Your Message Here"
-                            value={formData.message}
-                            onChange={handleChange}
-                            rows="4"
-                            className="w-full p-3 bg-transparent text-gray-100 placeholder-gray-400 border-b-2 border-cyan-500/40 focus:border-cyan-400 focus:outline-none transition duration-300 resize-none custom-scrollbar"
-                            required
-                        />
-                    </div>
-                    <button
-                        type="submit"
-                        id="submit"
-                        className="w-full sm:w-auto px-6 py-3 bg-cyan-500 hover:bg-cyan-400 text-black rounded-lg font-semibold transition-all duration-300 ease-in-out hover:shadow-button-glow-hover"
-                    >
-                        Submit
-                    </button>
+                     <button
+                         type="submit"
+                         id="submit"
+                         className="w-full sm:w-auto px-10 py-4 bg-terracotta hover:bg-coral text-ivory rounded-generous font-medium transition-all shadow-sm active:scale-95"
+                     >
+                         Send Message
+                     </button>
                 </form>
-            </div>
-
-            {/* Other Contact Links */}
-            <div className="mt-12 flex flex-wrap justify-center items-center gap-4 sm:gap-6">
-                <a href="mailto:harshitashwani@gmail.com" target="_blank" rel="noopener noreferrer" title="Gmail"
-                   className="p-2 rounded-full bg-purple-600/30 hover:bg-purple-500/50 transition duration-300 text-purple-300 hover:text-white">
-                    {/* Replace with actual Gmail SVG */}
-                    <PlaceholderIcon color="#db4437" size="28"/>
-                </a>
-                 <a href="https://www.linkedin.com/in/harshit-singla-7b459522a" target="_blank" rel="noopener noreferrer" title="LinkedIn"
-                    className="p-2 rounded-full bg-purple-600/30 hover:bg-purple-500/50 transition duration-300 text-purple-300 hover:text-white">
-                    {/* Replace with actual LinkedIn SVG */}
-                    <PlaceholderIcon color="#0077b5" size="28"/>
-                </a>
-                <a href="#" target="_blank" rel="noopener noreferrer" title="Discord" className="p-2 rounded-full bg-purple-600/30 hover:bg-purple-500/50 transition duration-300 text-purple-300 hover:text-white">
-                    {/* Add Discord Link and Icon */}
-                    <PlaceholderIcon color="#7289da" size="28"/>
-                </a>
-                <a href="https://github.com/Bada-Don/8" target="_blank" rel="noopener noreferrer" title="GitHub" className="p-2 rounded-full bg-purple-600/30 hover:bg-purple-500/50 transition duration-300 text-purple-300 hover:text-white">
-                    {/* Replace with actual GitHub SVG */}
-                    <PlaceholderIcon color="#ffffff" size="28"/>
-                </a>
-                {/* Add others like Instagram, WhatsApp if needed */}
-                 <a href="https://www.instagram.com/harshitsingla.exe/#" target="_blank" rel="noopener noreferrer" title="Instagram"
-                    className="p-2 rounded-full bg-purple-600/30 hover:bg-purple-500/50 transition duration-300 text-purple-300 hover:text-white">
-                     <PlaceholderIcon color="#e4405f" size="28"/>
-                 </a>
-                 {/* Consider privacy for WhatsApp link */}
-                 {/* <a href="https://web.whatsapp.com/send?phone=7696513958" target="_blank">...</a> */}
-
             </div>
         </div>
     );
 }
 
-export default ContactPage;
+export default ContactPage;

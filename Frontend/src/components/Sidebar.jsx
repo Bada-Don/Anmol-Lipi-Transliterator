@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink, useLocation, useParams, useNavigate } from 'react-router-dom';
+import { NavLink, useParams, useNavigate } from 'react-router-dom';
+import { Plus, Trash2, Edit3, Info, Mail, BookOpen, Scroll, Languages } from 'lucide-react';
 
 const BASE_API_URL = import.meta.env.DEV
-  ? "http://127.0.0.1:5000/api"
+  ? "http://localhost:5000/api"
   : "https://anmol-lipi-transliterator.onrender.com/api";
 
 const Logo = () => ( 
-    <div className="p-4 py-5 mb-4 text-center border-b border-cyan-500/10">
+    <div className="p-6 py-8 mb-4 border-b border-border-cream dark:border-border-dark">
         <NavLink to="/" className="inline-block">
-             <h1 className="text-2xl font-orbitron font-bold text-cyan-300 hover:text-cyan-100 transition-colors">
-                AURA.AI
+             <h1 className="text-3xl font-serif font-medium text-anthropic-black dark:text-ivory hover:text-terracotta transition-colors">
+                Boliyan
              </h1>
         </NavLink>
     </div>
@@ -18,16 +19,15 @@ const Logo = () => (
 function Sidebar({ onLinkClick }) { 
     const { chatId, sessionId } = useParams();
     const navigate = useNavigate();
-    const location = useLocation();
     
     const [sessions, setSessions] = useState([]);
     const [editingSessionId, setEditingSessionId] = useState(null);
     const [editTitle, setEditTitle] = useState('');
 
     const chats = [
-        { id: "anmol-lipi", name: "Anmol Lipi", to: "/chat/anmol-lipi", icon: "🗣️" },
-        { id: "gurbani-hindi", name: "Gurbani Hindi", to: "/chat/gurbani-hindi", icon: "📜" },
-        { id: "prabhki", name: "Prabhki", to: "/chat/prabhki", icon: "📖" },
+        { id: "anmol-lipi", name: "Anmol Lipi", to: "/chat/anmol-lipi", Icon: Languages },
+        { id: "gurbani-hindi", name: "Gurbani Hindi", to: "/chat/gurbani-hindi", Icon: Scroll },
+        { id: "prabhki", name: "Prabhki", to: "/chat/prabhki", Icon: BookOpen },
     ];
 
     useEffect(() => {
@@ -35,7 +35,6 @@ function Sidebar({ onLinkClick }) {
             fetchSessions();
         }
         
-        // Listen for custom event to refresh sessions
         const handleRefresh = () => fetchSessions();
         window.addEventListener('sessionUpdate', handleRefresh);
         
@@ -104,63 +103,64 @@ function Sidebar({ onLinkClick }) {
     };
 
     return (
-        <div className="flex-1 flex flex-col text-gray-200 custom-scrollbar overflow-y-auto">
+        <div className="flex-1 flex flex-col text-anthropic-black dark:text-warm-silver custom-scrollbar overflow-y-auto bg-ivory dark:bg-dark-surface transition-colors duration-300">
             <Logo />
             
             {/* Tool Selector */}
-            <div className="px-3 mb-6">
-                <h3 className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                    AI Assistants
+            <div className="px-4 mb-8">
+                <h3 className="px-2 py-1 text-[10px] font-medium text-stone-gray uppercase tracking-widest mb-3">
+                    Assistants
                 </h3>
-                <div className="grid grid-cols-3 gap-1 mb-4">
-                    {chats.map(chat => (
-                        <button
-                            key={chat.id}
-                            onClick={() => navigate(chat.to)}
-                            className={`p-2 rounded-lg flex flex-col items-center justify-center transition-all ${
-                                chatId === chat.id 
-                                ? 'bg-cyan-600/30 text-cyan-200 border border-cyan-500/30 shadow-lg shadow-cyan-500/10' 
-                                : 'text-gray-500 hover:bg-cyan-500/10 hover:text-gray-300 border border-transparent'
-                            }`}
-                            title={chat.name}
-                        >
-                            <span className="text-xl mb-1">{chat.icon}</span>
-                            <span className="text-[10px] font-medium truncate w-full text-center">{chat.name}</span>
-                        </button>
-                    ))}
+                <div className="grid grid-cols-3 gap-2">
+                    {chats.map(chat => {
+                        const { Icon } = chat;
+                        return (
+                            <button
+                                key={chat.id}
+                                onClick={() => navigate(chat.to)}
+                                className={`p-3 rounded-generous flex flex-col items-center justify-center transition-all ${
+                                    chatId === chat.id 
+                                    ? 'bg-warm-sand dark:bg-anthropic-black text-anthropic-black dark:text-ivory shadow-ring-warm' 
+                                    : 'text-olive-gray dark:text-stone-gray hover:bg-warm-sand/40 dark:hover:bg-anthropic-black/50 hover:text-anthropic-black dark:hover:text-ivory'
+                                }`}
+                                title={chat.name}
+                            >
+                                <Icon className="w-6 h-6 mb-2" />
+                                <span className="text-[10px] font-medium truncate w-full text-center">{chat.name}</span>
+                            </button>
+                        );
+                    })}
                 </div>
             </div>
 
             {/* Session History */}
-            <div className="px-3 flex-1 flex flex-col min-h-0">
-                <div className="flex items-center justify-between mb-2 px-2">
-                    <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        Chat History
+            <div className="px-4 flex-1 flex flex-col min-h-0">
+                <div className="flex items-center justify-between mb-4 px-2">
+                    <h3 className="text-[10px] font-medium text-stone-gray uppercase tracking-widest">
+                        History
                     </h3>
                     <button 
                         onClick={handleNewChat}
-                        className="p-1.5 rounded-md bg-cyan-600/20 text-cyan-300 hover:bg-cyan-600/40 transition-colors border border-cyan-500/20 group"
+                        className="p-1.5 rounded-comfort bg-terracotta text-ivory hover:bg-coral transition-colors shadow-sm"
                         title="New Chat"
                     >
-                        <svg className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                        </svg>
+                        <Plus className="w-4 h-4" />
                     </button>
                 </div>
                 
-                <div className="space-y-1 overflow-y-auto flex-1 pr-1 custom-scrollbar">
+                <div className="space-y-0.5 overflow-y-auto flex-1 pr-1 custom-scrollbar">
                     {sessions.length === 0 ? (
                         <div className="px-4 py-8 text-center">
-                            <p className="text-gray-600 text-xs italic">No past sessions</p>
+                            <p className="text-stone-gray text-xs italic">No past sessions</p>
                         </div>
                     ) : (
                         sessions.map(session => (
                             <div
                                 key={session.id}
-                                className={`group relative flex items-center rounded-lg transition-all duration-200 ${
+                                className={`group relative flex items-center rounded-comfort transition-all duration-200 ${
                                     sessionId === session.id 
-                                    ? 'bg-cyan-600/20 text-cyan-100 border border-cyan-500/20' 
-                                    : 'text-gray-400 hover:bg-cyan-500/10 hover:text-gray-200'
+                                    ? 'bg-warm-sand dark:bg-anthropic-black text-anthropic-black dark:text-ivory' 
+                                    : 'text-olive-gray dark:text-stone-gray hover:bg-warm-sand/30 dark:hover:bg-anthropic-black/30 hover:text-anthropic-black dark:hover:text-ivory'
                                 }`}
                             >
                                 <NavLink
@@ -171,7 +171,7 @@ function Sidebar({ onLinkClick }) {
                                     {editingSessionId === session.id ? (
                                         <input
                                             autoFocus
-                                            className="bg-black/40 border border-cyan-500/50 rounded px-1 w-full outline-none text-cyan-100"
+                                            className="bg-parchment dark:bg-deep-dark border border-stone-gray/30 rounded px-1 w-full outline-none text-anthropic-black dark:text-ivory"
                                             value={editTitle}
                                             onChange={(e) => setEditTitle(e.target.value)}
                                             onKeyDown={(e) => {
@@ -188,23 +188,15 @@ function Sidebar({ onLinkClick }) {
                                 <div className={`flex items-center pr-2 ${sessionId === session.id || 'opacity-0 group-hover:opacity-100'} transition-opacity`}>
                                     <button 
                                         onClick={(e) => handleRenameSession(e, session.id)}
-                                        className="p-1 text-gray-500 hover:text-cyan-400 transition-colors"
+                                        className="p-1 text-stone-gray hover:text-terracotta transition-colors"
                                     >
-                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            {editingSessionId === session.id ? (
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                                            ) : (
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                            )}
-                                        </svg>
+                                        <Edit3 className="w-3.5 h-3.5" />
                                     </button>
                                     <button 
                                         onClick={(e) => handleDeleteSession(e, session.id)}
-                                        className="p-1 text-gray-500 hover:text-red-400 transition-colors"
+                                        className="p-1 text-stone-gray hover:text-error-crimson transition-colors"
                                     >
-                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
+                                        <Trash2 className="w-3.5 h-3.5" />
                                     </button>
                                 </div>
                             </div>
@@ -214,13 +206,13 @@ function Sidebar({ onLinkClick }) {
             </div>
 
             {/* Static Bottom Links */}
-            <div className="mt-auto px-3 py-4 border-t border-cyan-500/10">
-                <nav className="space-y-0.5">
-                    <NavLink to="/about" className="flex items-center px-4 py-2 text-sm text-gray-500 hover:bg-cyan-500/10 hover:text-gray-300 rounded-lg transition-all">
-                        <span className="mr-3 text-lg">ℹ️</span> About
+            <div className="mt-auto px-4 py-6 border-t border-border-cream dark:border-border-dark bg-parchment/30 dark:bg-deep-dark/30">
+                <nav className="space-y-1">
+                    <NavLink to="/about" className="flex items-center px-4 py-2 text-sm text-olive-gray dark:text-stone-gray hover:bg-warm-sand/40 dark:hover:bg-anthropic-black/50 hover:text-anthropic-black dark:hover:text-ivory rounded-comfort transition-all">
+                        <Info className="w-4 h-4 mr-3" /> About
                     </NavLink>
-                    <NavLink to="/contact" className="flex items-center px-4 py-2 text-sm text-gray-500 hover:bg-cyan-500/10 hover:text-gray-300 rounded-lg transition-all">
-                        <span className="mr-3 text-lg">✉️</span> Contact
+                    <NavLink to="/contact" className="flex items-center px-4 py-2 text-sm text-olive-gray dark:text-stone-gray hover:bg-warm-sand/40 dark:hover:bg-anthropic-black/50 hover:text-anthropic-black dark:hover:text-ivory rounded-comfort transition-all">
+                        <Mail className="w-4 h-4 mr-3" /> Contact
                     </NavLink>
                 </nav>
             </div>
@@ -228,4 +220,4 @@ function Sidebar({ onLinkClick }) {
     );
 }
 
-export default Sidebar;
+export default Sidebar;

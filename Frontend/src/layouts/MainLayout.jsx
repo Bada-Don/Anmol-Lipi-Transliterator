@@ -1,45 +1,22 @@
 import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
-
-const HamburgerIcon = ({ onClick }) => ( /* ... same as before ... */
-    <button
-        onClick={onClick}
-        className="md:hidden p-2 text-gray-300 hover:text-cyan-300 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-cyan-500"
-        aria-label="Open sidebar"
-    >
-        <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-    </button>
-);
-
-const CloseIcon = ({ onClick }) => ( /* ... same as before ... */
-     <button
-        onClick={onClick}
-        className="absolute top-3 right-3 p-1 text-gray-400 hover:text-cyan-300 focus:outline-none"
-        aria-label="Close sidebar"
-    >
-        <svg className="h-5 w-5" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-    </button>
-);
-
+import { Menu, X, Sun, Moon } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 
 function MainLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { theme, toggleTheme } = useTheme();
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#070a15]">
-      {/* Sidebar for Desktop - Increase width here */}
+    <div className="flex h-screen overflow-hidden bg-parchment dark:bg-deep-dark transition-colors duration-300">
+      {/* Sidebar for Desktop */}
       <div className="hidden md:flex md:flex-shrink-0">
-        {/* Apply the new width to the container holding the Sidebar */}
-        <div className="flex flex-col w-96"> {/* Changed from md:w-72 (or similar) to w-96 */}
+        <div className="flex flex-col w-96 border-r border-border-cream dark:border-border-dark bg-ivory dark:bg-dark-surface transition-colors duration-300">
             <Sidebar />
         </div>
       </div>
@@ -47,11 +24,16 @@ function MainLayout() {
       {/* Mobile Sidebar (Off-canvas) */}
       {sidebarOpen && (
         <div className="md:hidden fixed inset-0 flex z-40">
-          <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" aria-hidden="true" onClick={toggleSidebar}></div>
+          <div className="fixed inset-0 bg-anthropic-black/20 dark:bg-black/40 backdrop-blur-sm transition-opacity" aria-hidden="true" onClick={toggleSidebar}></div>
           
-          {/* Sidebar Panel - Increase max-width here for mobile if desired */}
-          <div className="relative flex-1 flex flex-col max-w-xs w-full bg-[#0a0f1f]/95 backdrop-blur-md border-r border-cyan-500/20 shadow-2xl"> {/* Changed max-w-xs to max-w-sm */}
-             <CloseIcon onClick={toggleSidebar} />
+          <div className="relative flex-1 flex flex-col max-w-sm w-full bg-ivory dark:bg-dark-surface border-r border-border-cream dark:border-border-dark shadow-whisper transition-colors duration-300">
+             <button
+                onClick={toggleSidebar}
+                className="absolute top-4 right-4 p-2 text-olive-gray dark:text-warm-silver hover:text-terracotta focus:outline-none"
+                aria-label="Close sidebar"
+            >
+                <X className="h-6 w-6" />
+            </button>
              <Sidebar onLinkClick={toggleSidebar} />
           </div>
         </div>
@@ -59,16 +41,36 @@ function MainLayout() {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="md:hidden p-3 bg-[#0a0f1f]/80 backdrop-blur-md border-b border-cyan-500/10 flex items-center sticky top-0 z-30">
-            <HamburgerIcon onClick={toggleSidebar} />
-            <h1 className="ml-3 text-lg font-orbitron text-cyan-400">AURA.AI</h1>
+        <header className="p-4 bg-parchment/80 dark:bg-deep-dark/80 backdrop-blur-md border-b border-border-cream dark:border-border-dark flex items-center justify-between sticky top-0 z-30 transition-colors duration-300">
+            <div className="flex items-center">
+                <button
+                    onClick={toggleSidebar}
+                    className="md:hidden p-2 text-olive-gray dark:text-warm-silver hover:text-terracotta focus:outline-none"
+                    aria-label="Open sidebar"
+                >
+                    <Menu className="h-6 w-6" />
+                </button>
+                <h1 className="ml-3 text-2xl font-serif font-medium text-anthropic-black dark:text-ivory md:ml-0 md:hidden">Boliyan</h1>
+            </div>
+            
+            <button 
+                onClick={toggleTheme}
+                className="p-2 rounded-full hover:bg-warm-sand dark:hover:bg-dark-surface text-olive-gray dark:text-warm-silver transition-all shadow-sm border border-border-cream dark:border-border-dark bg-white dark:bg-anthropic-black"
+                aria-label="Toggle theme"
+            >
+                {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+            </button>
         </header>
-        <main className="flex-1 overflow-x-hidden overflow-y-auto animated-gradient-bg p-4 md:p-6">
-          <Outlet />
+        <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-8">
+          <div className="max-w-5xl mx-auto h-full">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>
   );
 }
+
+
 
 export default MainLayout;

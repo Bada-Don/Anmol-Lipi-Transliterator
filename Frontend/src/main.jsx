@@ -17,11 +17,14 @@ const updateSW = registerSW({
 })
 
 
+import { ThemeProvider } from './context/ThemeContext';
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    {/* Wrap App with BrowserRouter */}
     <BrowserRouter>
-      <App />
+      <ThemeProvider>
+        <App />
+      </ThemeProvider>
     </BrowserRouter>
   </React.StrictMode>,
-)
+)

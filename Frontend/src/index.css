@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Newsreader:opsz,wght@6-72,400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,51 +6,37 @@
 
 @layer base {
     body {
-        font-family: 'Inter', sans-serif;
-        /* Fallback for browsers that don't support backdrop-filter */
-        background-color: #0a0f1f;
-        @apply selection:bg-cyan-500 selection:text-black;
+        @apply bg-parchment text-anthropic-black font-sans selection:bg-terracotta selection:text-ivory;
+        line-height: 1.6;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        @apply font-serif font-medium;
+        line-height: 1.2;
     }
 }
 
-.font-orbitron {
-    font-family: 'Orbitron', sans-serif;
-}
-
-/* Custom scrollbar */
+/* Custom scrollbar - Claude style (subtle and warm) */
 .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 10px;
+    background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(0, 190, 255, 0.6);
-    border-radius: 10px;
+    @apply bg-warm-sand rounded-full;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 190, 255, 0.8);
+    @apply bg-stone-gray;
 }
 
-/* Glassmorphism effect */
-.glass-effect {
-    background: rgba(20, 25, 40, 0.6);
-    backdrop-filter: blur(12px) saturate(150%);
-    -webkit-backdrop-filter: blur(12px) saturate(150%);
-    border: 1px solid rgba(50, 60, 90, 0.5);
+/* Claude Shadow Rings */
+.shadow-ring {
+    box-shadow: 0px 0px 0px 1px #d1cfc5;
 }
 
-/* Animated gradient background */
-@keyframes gradientAnimation {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-.animated-gradient-bg {
-    background: linear-gradient(-45deg, #0a0f1f, #0d152b, #070a15, #0f1a33);
-    background-size: 400% 400%;
-    animation: gradientAnimation 25s ease infinite;
+.shadow-whisper {
+    box-shadow: rgba(0,0,0,0.05) 0px 4px 24px;
 }
 
 /* Message typing animation */
@@ -65,10 +51,11 @@
 }
 @keyframes typing {
     0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-3px); }
+    50% { transform: translateY(-4px); opacity: 0.5; }
 }
 
 @font-face {
+
     font-family: AnmolLipi;
     src: url("./assets/fonts/AnmolLipi/AnmolLipiThickRegular.ttf");
-}
+}
